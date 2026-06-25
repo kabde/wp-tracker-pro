@@ -25,7 +25,7 @@ class ITP_Sources {
             'period' => $this->period(),
             'limit'  => 50,
         ];
-        $r = wp_remote_get( ITP_API_URL . '/trk?' . http_build_query( $params ), [ 'timeout' => 20 ] );
+        $r = wp_remote_get( ITP_TRK_URL . '/query?' . http_build_query( $params ), [ 'timeout' => 20 ] );
         if ( is_wp_error( $r ) ) return [];
         return json_decode( wp_remote_retrieve_body( $r ), true ) ?: [];
     }

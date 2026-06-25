@@ -23,7 +23,7 @@ class ITP_Dashboard {
         foreach ( [ 'segment', 'source', 'device', 'country' ] as $f ) {
             if ( ! empty( $_GET[ $f ] ) ) $params[ $f ] = sanitize_text_field( wp_unslash( $_GET[ $f ] ) );
         }
-        $url = ITP_API_URL . '/trk' . '?' . http_build_query( $params );
+        $url = ITP_TRK_URL . '/query?' . http_build_query( $params );
         $r = wp_remote_get( $url, [ 'timeout' => 20 ] );
         if ( is_wp_error( $r ) ) return [];
         return json_decode( wp_remote_retrieve_body( $r ), true ) ?: [];

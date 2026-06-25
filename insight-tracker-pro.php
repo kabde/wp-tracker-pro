@@ -17,13 +17,14 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'ITP_VERSION', '1.0.2' );
+define( 'ITP_VERSION', '1.0.3' );
 define( 'ITP_FILE', __FILE__ );
 define( 'ITP_BASENAME', plugin_basename( __FILE__ ) );
 define( 'ITP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ITP_URL', plugin_dir_url( __FILE__ ) );
 define( 'ITP_CAPABILITY', 'manage_itp' );
 define( 'ITP_API_URL', 'https://dp-starter.khalid.digital' );
+define( 'ITP_TRK_URL', 'https://analytics.visitormetric.com/trk' );
 
 // Load translations
 add_action( 'init', function() {

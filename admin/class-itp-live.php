@@ -24,7 +24,7 @@ class ITP_Live {
 
     private function api( $view, $extra = [] ) {
         $params = array_merge( [ 'key' => get_option( 'itp_license_key', '' ), 'site' => wp_parse_url( home_url(), PHP_URL_HOST ), 'view' => $view, 'period' => $this->period(), 'limit' => 50 ], $extra );
-        $r = wp_remote_get( ITP_API_URL . '/trk' . '?' . http_build_query( $params ), [ 'timeout' => 20 ] );
+        $r = wp_remote_get( ITP_TRK_URL . '/query?' . http_build_query( $params ), [ 'timeout' => 20 ] );
         if ( is_wp_error( $r ) ) return [];
         return json_decode( wp_remote_retrieve_body( $r ), true ) ?: [];
     }

@@ -34,7 +34,7 @@ class ITP_Proxy {
 
         // Inject the license key server-side (never from client)
         $key      = get_option( 'itp_license_key', '' );
-        $endpoint = ITP_API_URL . '/trk';
+        $endpoint = ITP_TRK_URL . '/collect';
 
         if ( empty( $key ) || empty( $endpoint ) ) {
             wp_send_json_error( 'not_configured', 500 );
@@ -45,16 +45,25 @@ class ITP_Proxy {
             $events = [ $events ];
         }
 
-        // Add key to each event
+        $site = wp_parse_url( home_url(), PHP_URL_HOST );
+
+        // Inject geo from Cloudflare headers (real visitor IP, not server)
+        $geo_country = isset( $_SERVER['HTTP_CF_IPCOUNTRY'] ) ? sanitize_text_field( $_SERVER['HTTP_CF_IPCOUNTRY'] ) : '';
+        $geo_region  = isset( $_SERVER['HTTP_CF_REGION'] )    ? sanitize_text_field( $_SERVER['HTTP_CF_REGION'] )    : '';
+        $geo_city    = isset( $_SERVER['HTTP_CF_IPCITY'] )    ? sanitize_text_field( $_SERVER['HTTP_CF_IPCITY'] )    : '';
+
         foreach ( $events as &$event ) {
-            $event['key'] = $key;
+            $event['site_id'] = $site;
+            if ( $geo_country ) $event['geo_country'] = $geo_country;
+            if ( $geo_region )  $event['geo_region']  = $geo_region;
+            if ( $geo_city )    $event['geo_city']    = $geo_city;
         }
         unset( $event );
 
-        // Forward to Worker
+        // Forward to VPS API
         $response = wp_remote_post( $endpoint, [
             'timeout' => 10,
-            'body'    => wp_json_encode( $events ),
+            'body'    => wp_json_encode( [ 'site' => $site, 'key' => $key, 'events' => $events ] ),
             'headers' => [ 'Content-Type' => 'application/json' ],
         ] );
 
@@ -97,7 +106,7 @@ class ITP_Proxy {
             'sid'  => $sid,
         ];
 
-        $response = wp_remote_get( ITP_API_URL . '/trk?' . http_build_query( $params ), [
+        $response = wp_remote_get( ITP_TRK_URL . '/query?' . http_build_query( $params ), [
             'timeout' => 20,
         ] );
 
