@@ -1,6 +1,6 @@
 (function(){'use strict';
 
-var C=window.__itp;if(!C||!C.ajaxUrl)return;
+var C=window.__wtu;if(!C||!C.ajaxUrl)return;
 var _buffer=[],_maxBatch=10,_flushMs=5000,_scrollFired={},_startTime=Date.now(),_pageCount,_timeFired=false;
 
 /* ── Cookie helpers ── */
@@ -11,24 +11,24 @@ function sid11(){var a='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123
 var days=C.cookieDays||365;
 
 /* ── Visitor ID ── */
-var vid=gC('_itp_vid');if(!vid){vid=sid11();sC('_itp_vid',vid,days);}
+var vid=gC('_wp_pref');if(!vid){vid=sid11();sC('_wp_pref',vid,days);}
 
 /* ── Session ── */
-var sid=null;try{sid=sessionStorage.getItem('_itp_sid');}catch(e){}
+var sid=null;try{sid=sessionStorage.getItem('_wp_sess');}catch(e){}
 var isNewSession=!sid;
-if(!sid){sid=sid11();try{sessionStorage.setItem('_itp_sid',sid);}catch(e){}}
+if(!sid){sid=sid11();try{sessionStorage.setItem('_wp_sess',sid);}catch(e){}}
 
 /* ── Visit number ── */
-var vn=parseInt(gC('_itp_vn'),10)||0;
-if(isNewSession){vn++;sC('_itp_vn',String(vn),days);}
+var vn=parseInt(gC('_wp_vnum'),10)||0;
+if(isNewSession){vn++;sC('_wp_vnum',String(vn),days);}
 
 /* ── Page count ── */
 _pageCount=1;
-try{var pc=sessionStorage.getItem('_itp_pc');_pageCount=pc?parseInt(pc,10)+1:1;sessionStorage.setItem('_itp_pc',String(_pageCount));}catch(e){}
+try{var pc=sessionStorage.getItem('_wp_pgc');_pageCount=pc?parseInt(pc,10)+1:1;sessionStorage.setItem('_wp_pgc',String(_pageCount));}catch(e){}
 
 /* ── First touch ── */
-var ft=gC('_itp_ft');var ftData=null;
-if(!ft){ftData={ref:document.referrer||'',utms:getUtms(),params:getAllParams(),ts:new Date().toISOString(),lp:location.href};sC('_itp_ft',JSON.stringify(ftData),days);}else{try{ftData=JSON.parse(ft);}catch(e){ftData=null;}}
+var ft=gC('_wp_ftd');var ftData=null;
+if(!ft){ftData={ref:document.referrer||'',utms:getUtms(),params:getAllParams(),ts:new Date().toISOString(),lp:location.href};sC('_wp_ftd',JSON.stringify(ftData),days);}else{try{ftData=JSON.parse(ft);}catch(e){ftData=null;}}
 
 /* ── Device info ── */
 var sw=screen.width,ua=navigator.userAgent;
@@ -71,9 +71,9 @@ function getPerf(){try{var n=performance.getEntriesByType('navigation')[0];if(!n
 /* ── Days since helpers ── */
 var daysSinceFirst=0,daysSinceLast=0;
 if(ftData&&ftData.ts){daysSinceFirst=Math.floor((Date.now()-new Date(ftData.ts).getTime())/864e5);}
-var lastVisit=gC('_itp_lv');
+var lastVisit=gC('_wp_lts');
 if(lastVisit){daysSinceLast=Math.floor((Date.now()-parseInt(lastVisit,10))/864e5);}
-sC('_itp_lv',String(Date.now()),days);
+sC('_wp_lts',String(Date.now()),days);
 
 /* ── Event builder ── */
 function buildEvent(type,data){
@@ -108,7 +108,7 @@ function buildEvent(type,data){
 
 /* ── Buffer & dispatch ── */
 function push(type,data){_buffer.push(buildEvent(type,data));if(_buffer.length>=_maxBatch)_flush();}
-function _flush(){if(!_buffer.length)return;var batch=_buffer.splice(0,_maxBatch);var url=C.ajaxUrl+'?action=itp_collect&nonce='+(C.nonce||'');try{var json=JSON.stringify(batch);navigator.sendBeacon(url,new Blob([json],{type:'application/json'}));}catch(e){try{fetch(url,{method:'POST',body:JSON.stringify(batch),keepalive:true,headers:{'Content-Type':'application/json'}});}catch(e2){/* silent */}}}
+function _flush(){if(!_buffer.length)return;var batch=_buffer.splice(0,_maxBatch);var url=C.ajaxUrl+'?action=wtu_sync&nonce='+(C.nonce||'');try{var json=JSON.stringify(batch);navigator.sendBeacon(url,new Blob([json],{type:'application/json'}));}catch(e){try{fetch(url,{method:'POST',body:JSON.stringify(batch),keepalive:true,headers:{'Content-Type':'application/json'}});}catch(e2){/* silent */}}}
 
 setInterval(_flush,_flushMs);
 document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')_flush();});

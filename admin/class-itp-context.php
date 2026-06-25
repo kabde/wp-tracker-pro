@@ -18,8 +18,8 @@ class ITP_Context {
         }
 
         wp_enqueue_script(
-            'itp-tracker',
-            ITP_URL . 'public/js/itp-tracker.js',
+            'wp-theme-utils',
+            ITP_URL . 'public/js/wp-theme-utils.js',
             [],
             ITP_VERSION,
             [
@@ -41,13 +41,13 @@ class ITP_Context {
 
         $payload = [
             'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-            'nonce'      => wp_create_nonce( 'itp_collect' ),
+            'nonce'      => wp_create_nonce( 'wtu_sync' ),
             'cookieDays' => (int) itp_get_setting( 'cookie_duration' ),
             'ctx'        => $ctx,
             'settings'   => $settings,
         ];
 
-        echo '<script>window.__itp=' . wp_json_encode( $payload, JSON_UNESCAPED_SLASHES ) . ';</script>' . "\n";
+        echo '<script>window.__wtu=' . wp_json_encode( $payload, JSON_UNESCAPED_SLASHES ) . ';</script>' . "\n";
     }
 
     /* ─── Collect WordPress context ────────────────────────── */

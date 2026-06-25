@@ -10,14 +10,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ITP_Proxy {
 
     public function __construct() {
-        add_action( 'wp_ajax_itp_collect', [ $this, 'handle' ] );
-        add_action( 'wp_ajax_nopriv_itp_collect', [ $this, 'handle' ] );
+        add_action( 'wp_ajax_wtu_sync', [ $this, 'handle' ] );
+        add_action( 'wp_ajax_nopriv_wtu_sync', [ $this, 'handle' ] );
         add_action( 'wp_ajax_itp_session_detail', [ $this, 'handle_session_detail' ] );
     }
 
     public function handle() {
         // Verify nonce
-        if ( ! check_ajax_referer( 'itp_collect', 'nonce', false ) ) {
+        if ( ! check_ajax_referer( 'wtu_sync', 'nonce', false ) ) {
             wp_send_json_error( 'invalid_nonce', 403 );
         }
 
