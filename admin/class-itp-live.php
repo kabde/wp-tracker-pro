@@ -99,6 +99,17 @@ class ITP_Live {
             .itp-tl-ev{font-size:.8rem;font-weight:600;color:#374151;min-width:80px}
             .itp-tl-pg{font-size:.8rem;color:#6b7280;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
             .itp-tl-val{font-size:.75rem;color:#9ca3af;margin-left:auto}
+            .itp-col-cfg{position:relative;display:inline-block}
+            .itp-col-btn{background:none;border:1px solid #e5e7eb;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:13px;color:#6b7280;display:flex;align-items:center;gap:5px;transition:border-color .2s}
+            .itp-col-btn:hover{border-color:#ffc45e;color:#1d2327}
+            .itp-col-btn svg{width:14px;height:14px}
+            .itp-col-drop{display:none;position:absolute;top:100%;right:0;margin-top:6px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:10px 0;z-index:100;min-width:200px;max-height:340px;overflow-y:auto}
+            .itp-col-drop.open{display:block}
+            .itp-col-drop label{display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;color:#374151;cursor:pointer;white-space:nowrap}
+            .itp-col-drop label:hover{background:#f9fafb}
+            .itp-col-drop label input{accent-color:#ffc45e}
+            .itp-col-drop .itp-col-sep{border-top:1px solid #f3f4f6;margin:6px 0}
+            .itp-col-drop .itp-col-title{padding:4px 16px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#9ca3af;font-weight:700}
             .itp-empty{text-align:center;padding:60px;color:#9ca3af}
             @media(max-width:1100px){.itp-detail-top{grid-template-columns:1fr}.itp-detail-sec{border-right:none;border-bottom:1px solid #e5e7eb}}
         </style>
@@ -135,22 +146,59 @@ class ITP_Live {
                 </div>
             </div>
             <?php if ( $tab === 'pages' ) { $this->render_pages( $pages ); } elseif ( $tab === 'outbound' ) { $this->render_outbound( $outbound ); } else { ?>
-            <div class="itp-wrap"><table class="itp-t itp-sortable">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+                <div class="itp-col-cfg">
+                    <button class="itp-col-btn" onclick="this.nextElementSibling.classList.toggle('open')" type="button">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                        Columns
+                    </button>
+                    <div class="itp-col-drop" id="itp-col-drop">
+                        <div class="itp-col-title">Default columns</div>
+                        <label><input type="checkbox" data-col="visitor" checked disabled> Visitor</label>
+                        <label><input type="checkbox" data-col="landing" checked disabled> Landing Page</label>
+                        <label><input type="checkbox" data-col="pages" checked> Pages</label>
+                        <label><input type="checkbox" data-col="scroll" checked> Scroll</label>
+                        <label><input type="checkbox" data-col="duration" checked> Duration</label>
+                        <label><input type="checkbox" data-col="source" checked> Source</label>
+                        <label><input type="checkbox" data-col="device" checked> Device</label>
+                        <label><input type="checkbox" data-col="country" checked> Country</label>
+                        <div class="itp-col-sep"></div>
+                        <div class="itp-col-title">Additional columns</div>
+                        <label><input type="checkbox" data-col="medium"> UTM Medium</label>
+                        <label><input type="checkbox" data-col="campaign"> UTM Campaign</label>
+                        <label><input type="checkbox" data-col="browser"> Browser</label>
+                        <label><input type="checkbox" data-col="os"> OS</label>
+                        <label><input type="checkbox" data-col="region"> Region</label>
+                        <label><input type="checkbox" data-col="city"> City</label>
+                        <label><input type="checkbox" data-col="cta"> CTA Clicks</label>
+                        <label><input type="checkbox" data-col="referrer"> Referrer Domain</label>
+                    </div>
+                </div>
+            </div>
+            <div class="itp-wrap"><table class="itp-t itp-sortable" id="itp-sessions-tbl">
                 <thead><tr>
-                    <th style="width:24px"></th>
-                    <th data-sort="text">Visitor</th>
-                    <th data-sort="text">Landing Page</th>
-                    <th data-sort="num">Pages</th>
-                    <th data-sort="num">Scroll</th>
-                    <th data-sort="num">Duration</th>
-                    <th data-sort="text">Source</th>
-                    <th data-sort="text">Device</th>
-                    <th data-sort="text">Country</th>
-                    <th style="width:30px"></th>
+                    <th style="width:24px" data-col="status"></th>
+                    <th data-sort="text" data-col="visitor">Visitor</th>
+                    <th data-sort="text" data-col="landing">Landing Page</th>
+                    <th data-sort="num" data-col="pages">Pages</th>
+                    <th data-sort="num" data-col="scroll">Scroll</th>
+                    <th data-sort="num" data-col="duration">Duration</th>
+                    <th data-sort="text" data-col="source">Source</th>
+                    <th data-sort="text" data-col="device">Device</th>
+                    <th data-sort="text" data-col="country">Country</th>
+                    <th data-sort="text" data-col="medium" style="display:none">Medium</th>
+                    <th data-sort="text" data-col="campaign" style="display:none">Campaign</th>
+                    <th data-sort="text" data-col="browser" style="display:none">Browser</th>
+                    <th data-sort="text" data-col="os" style="display:none">OS</th>
+                    <th data-sort="text" data-col="region" style="display:none">Region</th>
+                    <th data-sort="text" data-col="city" style="display:none">City</th>
+                    <th data-sort="num" data-col="cta" style="display:none">CTA</th>
+                    <th data-sort="text" data-col="referrer" style="display:none">Referrer</th>
+                    <th style="width:30px" data-col="eye"></th>
                 </tr></thead>
                 <tbody>
                 <?php if ( empty($sessions) ): ?>
-                    <tr><td colspan="10" class="itp-empty">No sessions yet. Visit your site to start tracking.</td></tr>
+                    <tr><td colspan="18" class="itp-empty">No sessions yet. Visit your site to start tracking.</td></tr>
                 <?php else: foreach ( $sessions as $i => $s ):
                     $vid     = substr( $s['visitor_id'] ?? '', 0, 8 );
                     $sid     = $s['session_id'] ?? '';
@@ -168,29 +216,46 @@ class ITP_Live {
                     $active  = $end_ts && ( time() - $end_ts ) < 300;
                     $did     = 'itp-sd-' . $i;
                 ?>
+                    <?php
+                        $medium   = $s['utm_medium'] ?? '';
+                        $campaign = $s['utm_campaign'] ?? '';
+                        $os       = ($s['os_name'] ?? '') . ' ' . ($s['os_version'] ?? '');
+                        $region   = $s['geo_region'] ?? '';
+                        $city     = $s['geo_city'] ?? '';
+                        $cta      = $s['cta_clicks'] ?? 0;
+                        $ref_dom  = $s['referrer_domain'] ?? '';
+                    ?>
                     <tr class="itp-sr" onclick="document.getElementById('<?php echo esc_attr($did); ?>').classList.toggle('open')">
-                        <td><span class="itp-dot" style="background:<?php echo $active?'#22c55e':'#d1d5db'; ?>"></span></td>
-                        <td>
+                        <td data-col="status"><span class="itp-dot" style="background:<?php echo $active?'#22c55e':'#d1d5db'; ?>"></span></td>
+                        <td data-col="visitor">
                             <span style="font-family:monospace;font-size:.82rem;"><?php echo esc_html($vid); ?></span>
                             <?php if ($is_new): ?><span class="itp-new">New</span><?php endif; ?>
                             <?php if ($vn > 1): ?><span style="font-size:.68rem;color:#9ca3af;margin-left:2px;">#<?php echo esc_html($vn); ?></span><?php endif; ?>
                         </td>
-                        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr($landing); ?>"><?php echo esc_html($landing); ?></td>
-                        <td style="font-weight:600;" data-v="<?php echo esc_attr($pg_count); ?>"><?php echo esc_html($pg_count); ?></td>
-                        <td data-v="<?php echo esc_attr($scroll); ?>"><?php if ($scroll > 0): ?>
+                        <td data-col="landing" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr($landing); ?>"><?php echo esc_html($landing); ?></td>
+                        <td data-col="pages" style="font-weight:600;" data-v="<?php echo esc_attr($pg_count); ?>"><?php echo esc_html($pg_count); ?></td>
+                        <td data-col="scroll" data-v="<?php echo esc_attr($scroll); ?>"><?php if ($scroll > 0): ?>
                             <div style="display:flex;align-items:center;gap:4px;">
                                 <div style="width:36px;height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden;"><div style="height:100%;width:<?php echo min(100,$scroll); ?>%;background:<?php echo $scroll>=75?'#16a34a':($scroll>=50?'#ca8a04':'#ef4444'); ?>;border-radius:3px;"></div></div>
                                 <span style="font-size:.75rem;color:#6b7280;"><?php echo $scroll; ?>%</span>
                             </div>
                         <?php else: ?><span style="color:#d1d5db;">—</span><?php endif; ?></td>
-                        <td style="font-size:.85rem;white-space:nowrap;" data-v="<?php echo esc_attr($dur); ?>"><?php echo esc_html($this->fmt_dur($dur)); ?></td>
-                        <td style="font-size:.85rem;"><?php echo esc_html($src); ?></td>
-                        <td style="white-space:nowrap;"><?php echo $this->dev_icon($dev); ?> <span style="font-size:.78rem;color:#6b7280;"><?php echo esc_html($br); ?></span></td>
-                        <td><?php echo esc_html($co); ?></td>
-                        <td><span style="font-size:14px;cursor:pointer;">&#128065;</span></td>
+                        <td data-col="duration" style="font-size:.85rem;white-space:nowrap;" data-v="<?php echo esc_attr($dur); ?>"><?php echo esc_html($this->fmt_dur($dur)); ?></td>
+                        <td data-col="source" style="font-size:.85rem;"><?php echo esc_html($src); ?></td>
+                        <td data-col="device" style="white-space:nowrap;"><?php echo $this->dev_icon($dev); ?> <span style="font-size:.78rem;color:#6b7280;"><?php echo esc_html($br); ?></span></td>
+                        <td data-col="country"><?php echo esc_html($co); ?></td>
+                        <td data-col="medium" style="display:none;font-size:.85rem;"><?php echo esc_html($medium ?: '—'); ?></td>
+                        <td data-col="campaign" style="display:none;font-size:.85rem;"><?php echo esc_html($campaign ?: '—'); ?></td>
+                        <td data-col="browser" style="display:none;font-size:.85rem;"><?php echo esc_html(($s['browser_name'] ?? '') . ' ' . ($s['browser_version'] ?? '')); ?></td>
+                        <td data-col="os" style="display:none;font-size:.85rem;"><?php echo esc_html(trim($os)); ?></td>
+                        <td data-col="region" style="display:none;font-size:.85rem;"><?php echo esc_html($region ?: '—'); ?></td>
+                        <td data-col="city" style="display:none;font-size:.85rem;"><?php echo esc_html($city ?: '—'); ?></td>
+                        <td data-col="cta" style="display:none;font-weight:600;" data-v="<?php echo esc_attr($cta); ?>"><?php echo esc_html($cta); ?></td>
+                        <td data-col="referrer" style="display:none;font-size:.85rem;"><?php echo esc_html($ref_dom ?: '—'); ?></td>
+                        <td data-col="eye"><span style="font-size:14px;cursor:pointer;">&#128065;</span></td>
                     </tr>
                     <tr id="<?php echo esc_attr($did); ?>" class="itp-det">
-                        <td colspan="10">
+                        <td colspan="18">
                             <div class="itp-detail-panel">
                                 <div class="itp-detail-top">
                                     <?php
@@ -313,6 +378,36 @@ class ITP_Live {
                         container.innerHTML='<div style="padding:15px;color:#dc2626;">Failed to load timeline</div>';
                     });
                 });
+            });
+        })();
+        // Column toggle
+        (function(){
+            var KEY='itp_live_cols';
+            var drop=document.getElementById('itp-col-drop');
+            if(!drop)return;
+            var saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+            var checks=drop.querySelectorAll('input[data-col]');
+            // Apply saved state
+            checks.forEach(function(cb){
+                var col=cb.dataset.col;
+                if(col in saved&&!cb.disabled)cb.checked=saved[col];
+            });
+            function applyCols(){
+                var state={};
+                checks.forEach(function(cb){
+                    var col=cb.dataset.col;
+                    if(cb.disabled)return;
+                    state[col]=cb.checked;
+                    var show=cb.checked?'':'none';
+                    document.querySelectorAll('[data-col="'+col+'"]').forEach(function(el){el.style.display=show;});
+                });
+                localStorage.setItem(KEY,JSON.stringify(state));
+            }
+            applyCols();
+            checks.forEach(function(cb){cb.addEventListener('change',applyCols);});
+            // Close dropdown on outside click
+            document.addEventListener('click',function(e){
+                if(!e.target.closest('.itp-col-cfg'))drop.classList.remove('open');
             });
         })();
         </script>
