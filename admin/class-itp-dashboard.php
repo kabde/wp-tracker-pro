@@ -56,6 +56,7 @@ class ITP_Dashboard {
         $pages = $data['top_pages'] ?? [];
         $sources = $data['sources'] ?? [];
         $countries = $data['countries'] ?? [];
+        $referrers = $data['referrers'] ?? [];
         $period = $this->period();
         $seg = isset( $_GET['segment'] ) ? sanitize_text_field( wp_unslash( $_GET['segment'] ) ) : 'all';
         ?>
@@ -65,7 +66,7 @@ class ITP_Dashboard {
             .itp-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px 16px;text-align:center}
             .itp-card-n{font-size:28px;font-weight:800;color:#1d2327;line-height:1}
             .itp-card-l{font-size:12px;color:#6b7280;margin-top:6px}
-            .itp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+            .itp-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:24px}
             .itp-box{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
             .itp-box-h{padding:14px 18px;font-size:13px;font-weight:700;color:#1d2327;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;justify-content:space-between}
             .itp-box-h a{font-size:12px;color:#2563eb;text-decoration:none;font-weight:600}
@@ -92,7 +93,9 @@ class ITP_Dashboard {
             .itp-funnel-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:.78rem;font-weight:700;color:#fff}
             .itp-funnel-drop{font-size:.75rem;color:#dc2626;min-width:60px;text-align:right}
             .itp-empty{text-align:center;padding:40px;color:#9ca3af;font-size:.9rem}
-            @media(max-width:1100px){.itp-cards{grid-template-columns:repeat(3,1fr)}.itp-row{grid-template-columns:1fr}}
+            @media(max-width:1200px){.itp-row{grid-template-columns:1fr 1fr}}
+            @media(max-width:1100px){.itp-cards{grid-template-columns:repeat(3,1fr)}}
+            @media(max-width:768px){.itp-row{grid-template-columns:1fr}}
             @media(max-width:768px){.itp-cards{grid-template-columns:repeat(2,1fr)}}
         </style>
 
@@ -224,6 +227,27 @@ class ITP_Dashboard {
                                     <span class="itp-list-name"><?php echo esc_html( $co['geo_country'] ); ?></span>
                                     <span class="itp-list-pct"><?php echo esc_html( $pct ); ?>%</span>
                                     <span class="itp-list-val"><?php echo esc_html( number_format_i18n( $co['visitors'] ) ); ?></span>
+                                </div>
+                            <?php endforeach;
+                        endif; ?>
+                    </div>
+                </div>
+
+                <div class="itp-box">
+                    <div class="itp-box-h"><?php esc_html_e( 'Referrers', 'insight-tracker-pro' ); ?> <a href="<?php echo esc_url( admin_url( 'admin.php?page=itp-referrers&period=' . $period ) ); ?>"><?php esc_html_e( 'View all', 'insight-tracker-pro' ); ?></a></div>
+                    <div class="itp-box-body">
+                        <?php if ( empty( $referrers ) ) : ?>
+                            <div class="itp-empty"><?php esc_html_e( 'No data yet', 'insight-tracker-pro' ); ?></div>
+                        <?php else :
+                            $total_ref = array_sum( array_column( $referrers, 'visitors' ) ) ?: 1;
+                            foreach ( $referrers as $ref ) :
+                                $pct = round( $ref['visitors'] / $total_ref * 100 );
+                            ?>
+                                <div class="itp-list-row">
+                                    <img src="https://www.google.com/s2/favicons?sz=16&domain=<?php echo esc_attr( $ref['referrer_domain'] ); ?>" alt="" style="width:14px;height:14px;border-radius:2px;flex-shrink:0;">
+                                    <span class="itp-list-name"><?php echo esc_html( $ref['referrer_domain'] ); ?></span>
+                                    <span class="itp-list-pct"><?php echo esc_html( $pct ); ?>%</span>
+                                    <span class="itp-list-val"><?php echo esc_html( number_format_i18n( $ref['visitors'] ) ); ?></span>
                                 </div>
                             <?php endforeach;
                         endif; ?>

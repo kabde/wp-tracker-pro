@@ -14,7 +14,7 @@ class ITP_Live {
 
     private function tab() {
         $t = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'sessions';
-        return in_array( $t, [ 'sessions', 'pages' ], true ) ? $t : 'sessions';
+        return in_array( $t, [ 'sessions', 'pages', 'outbound' ], true ) ? $t : 'sessions';
     }
 
     private function period() {
@@ -54,6 +54,9 @@ class ITP_Live {
         if ( $tab === 'pages' ) {
             $data  = $this->api( 'events', [ 'event' => 'pv' ] );
             $pages = $data['events'] ?? [];
+        } elseif ( $tab === 'outbound' ) {
+            $data     = $this->api( 'events', [ 'event' => 'outbound_click' ] );
+            $outbound = $data['events'] ?? [];
         } else {
             $data     = $this->api( 'sessions' );
             $sessions = $data['data'] ?? [];
@@ -114,15 +117,24 @@ class ITP_Live {
                 </div>
                 <div class="itp-stat-badge">
                     <span class="itp-pulse"></span>
-                    <strong><?php echo esc_html( number_format_i18n( count( $tab === 'pages' ? $pages : $sessions ) ) ); ?></strong>
-                    <?php echo $tab === 'pages' ? esc_html__( 'page views', 'insight-tracker-pro' ) : esc_html__( 'sessions', 'insight-tracker-pro' ); ?>
+                    <strong><?php
+                        if ( $tab === 'pages' ) echo esc_html( number_format_i18n( count( $pages ) ) );
+                        elseif ( $tab === 'outbound' ) echo esc_html( number_format_i18n( count( $outbound ) ) );
+                        else echo esc_html( number_format_i18n( count( $sessions ) ) );
+                    ?></strong>
+                    <?php
+                        if ( $tab === 'pages' ) esc_html_e( 'page views', 'insight-tracker-pro' );
+                        elseif ( $tab === 'outbound' ) esc_html_e( 'outbound clicks', 'insight-tracker-pro' );
+                        else esc_html_e( 'sessions', 'insight-tracker-pro' );
+                    ?>
                 </div>
                 <div class="itp-nav">
                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=itp-live&period=' . $period . '&tab=sessions' ) ); ?>" class="<?php echo $tab === 'sessions' ? 'on' : ''; ?>">Sessions</a>
                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=itp-live&period=' . $period . '&tab=pages' ) ); ?>" class="<?php echo $tab === 'pages' ? 'on' : ''; ?>">Recent Pages</a>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=itp-live&period=' . $period . '&tab=outbound' ) ); ?>" class="<?php echo $tab === 'outbound' ? 'on' : ''; ?>">Outbound Clicks</a>
                 </div>
             </div>
-            <?php if ( $tab === 'pages' ) { $this->render_pages( $pages ); } else { ?>
+            <?php if ( $tab === 'pages' ) { $this->render_pages( $pages ); } elseif ( $tab === 'outbound' ) { $this->render_outbound( $outbound ); } else { ?>
             <div class="itp-wrap"><table class="itp-t itp-sortable">
                 <thead><tr>
                     <th style="width:24px"></th>
@@ -343,6 +355,43 @@ class ITP_Live {
                     <td style="font-size:.85rem;"><?php echo esc_html( $src ); ?></td>
                     <td style="white-space:nowrap;"><?php echo $this->dev_icon( $dev ); ?></td>
                     <td><?php echo esc_html( $co ); ?></td>
+                </tr>
+            <?php endforeach; endif; ?>
+            </tbody>
+        </table></div>
+        <?php
+    }
+
+    private function render_outbound( $clicks ) {
+        ?>
+        <div class="itp-wrap"><table class="itp-t itp-sortable">
+            <thead><tr>
+                <th data-sort="text"><?php esc_html_e( 'Time', 'insight-tracker-pro' ); ?></th>
+                <th data-sort="text"><?php esc_html_e( 'Page', 'insight-tracker-pro' ); ?></th>
+                <th data-sort="text"><?php esc_html_e( 'Clicked URL', 'insight-tracker-pro' ); ?></th>
+                <th data-sort="text"><?php esc_html_e( 'Link Text', 'insight-tracker-pro' ); ?></th>
+                <th data-sort="text"><?php esc_html_e( 'Domain', 'insight-tracker-pro' ); ?></th>
+                <th data-sort="text"><?php esc_html_e( 'Visitor', 'insight-tracker-pro' ); ?></th>
+            </tr></thead>
+            <tbody>
+            <?php if ( empty( $clicks ) ): ?>
+                <tr><td colspan="6" class="itp-empty"><?php esc_html_e( 'No outbound clicks yet.', 'insight-tracker-pro' ); ?></td></tr>
+            <?php else: foreach ( $clicks as $c ):
+                $ts   = substr( $c['event_ts'] ?? '', 11, 8 );
+                $page = $c['page_path'] ?? '/';
+                $url  = $c['event_label'] ?? '';
+                $edata = json_decode( $c['event_data'] ?? '{}', true );
+                $text = $edata['text'] ?? '';
+                $domain = $edata['domain'] ?? '';
+                $vid  = substr( $c['visitor_id'] ?? '', 0, 11 );
+            ?>
+                <tr>
+                    <td style="font-family:monospace;font-size:.82rem;white-space:nowrap;"><?php echo esc_html( $ts ); ?></td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr( $page ); ?>"><?php echo esc_html( $page ); ?></td>
+                    <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr( $url ); ?>"><a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:none;"><?php echo esc_html( $url ); ?></a></td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6b7280;" title="<?php echo esc_attr( $text ); ?>"><?php echo esc_html( $text ?: '—' ); ?></td>
+                    <td><span style="display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600;background:#f3f4f6;color:#374151;"><?php echo esc_html( $domain ); ?></span></td>
+                    <td style="font-family:monospace;font-size:.82rem;"><?php echo esc_html( $vid ); ?></td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>

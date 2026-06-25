@@ -58,11 +58,13 @@ if ( itp_is_licensed() ) {
         require_once ITP_PATH . 'admin/class-itp-live.php';
         require_once ITP_PATH . 'admin/class-itp-sources.php';
         require_once ITP_PATH . 'admin/class-itp-countries.php';
+        require_once ITP_PATH . 'admin/class-itp-referrers.php';
         require_once ITP_PATH . 'admin/class-itp-explorer.php';
         new ITP_Dashboard();
         new ITP_Live();
         new ITP_Sources();
         new ITP_Countries();
+        new ITP_Referrers();
         new ITP_Explorer();
 
         // Shared header CSS + sortable table script on ITP pages
