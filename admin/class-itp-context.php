@@ -40,11 +40,11 @@ class ITP_Context {
         $settings = $this->collect_settings();
 
         $payload = [
-            'endpoint' => itp_get_setting( 'endpoint' ),
-            'key'      => get_option( 'itp_license_key', '' ),
+            'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+            'nonce'      => wp_create_nonce( 'itp_collect' ),
             'cookieDays' => (int) itp_get_setting( 'cookie_duration' ),
-            'ctx'      => $ctx,
-            'settings' => $settings,
+            'ctx'        => $ctx,
+            'settings'   => $settings,
         ];
 
         echo '<script>window.__itp=' . wp_json_encode( $payload, JSON_UNESCAPED_SLASHES ) . ';</script>' . "\n";

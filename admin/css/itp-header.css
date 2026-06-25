@@ -1,0 +1,177 @@
+/* ── ITP Shared Header ── */
+.itp { max-width: 1500px; margin: 0 auto; padding: 20px }
+
+.itp-header {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 28px 32px 24px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+}
+.itp-header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: #ffc45e;
+    border-radius: 4px 0 0 4px;
+}
+
+.itp-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.itp-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1d2327;
+    margin: 0;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+}
+.itp-subtitle {
+    font-size: 13.5px;
+    color: #6b7280;
+    margin: 6px 0 0;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* Period selector */
+.itp-period {
+    display: flex;
+    gap: 4px;
+    background: #f9fafb;
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+.itp-period a {
+    padding: 7px 18px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #6b7280;
+    transition: all .2s ease;
+    white-space: nowrap;
+}
+.itp-period a:hover {
+    color: #1d2327;
+    background: #fff;
+}
+.itp-period a.on {
+    background: #1d2327;
+    color: #ffc45e;
+    box-shadow: 0 2px 6px rgba(29,35,39,.2);
+}
+
+/* Tab navigation */
+.itp-nav {
+    display: flex;
+    gap: 6px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+}
+.itp-nav a {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: #6b7280;
+    transition: all .2s ease;
+}
+.itp-nav a:hover {
+    background: #f9fafb;
+    color: #1d2327;
+}
+.itp-nav a.on {
+    background: #1d2327;
+    color: #ffc45e;
+    box-shadow: 0 1px 4px rgba(29,35,39,.15);
+}
+
+/* Filter bar */
+.itp-filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.itp-filter-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+}
+.itp-filter-bar select {
+    padding: 7px 30px 7px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+    background: #f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+    color: #1d2327;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.itp-filter-bar select:hover,
+.itp-filter-bar select:focus {
+    border-color: #ffc45e;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255,196,94,.15);
+}
+
+/* Stat badge (Live Feed session count) */
+.itp-stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 16px;
+}
+.itp-stat-badge strong {
+    color: #1d2327;
+    font-weight: 800;
+    font-size: 15px;
+}
+.itp-stat-badge .itp-pulse {
+    width: 8px; height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: itp-pulse 2s infinite;
+}
+@keyframes itp-pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: .4; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .itp-header { padding: 20px 20px 18px; }
+    .itp-title { font-size: 22px; }
+    .itp-header-top { flex-direction: column; }
+    .itp-period { align-self: flex-start; }
+    .itp-nav { gap: 4px; }
+    .itp-nav a { padding: 7px 14px; font-size: 12px; }
+}

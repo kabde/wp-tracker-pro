@@ -51,7 +51,7 @@ function itp_activate_license( $key ) {
     ]);
 
     if ( is_wp_error( $response ) ) {
-        error_log( '[SRP] License activation error: ' . $response->get_error_message() );
+        error_log( '[ITP] License activation error: ' . $response->get_error_message() );
         /* translators: %s: error message from server */
         return [ 'success' => false, 'message' => sprintf( __( 'Connection error: %s', 'insight-tracker-pro' ), $response->get_error_message() ) ];
     }
@@ -114,7 +114,7 @@ function itp_validate_license() {
     ]);
 
     if ( is_wp_error( $response ) ) {
-        error_log( '[SRP] License validation error: ' . $response->get_error_message() );
+        error_log( '[ITP] License validation error: ' . $response->get_error_message() );
         return;
     }
 
@@ -198,14 +198,14 @@ add_action( 'admin_init', 'itp_force_update_check' );
 function itp_admin_notice_no_license() {
     if ( itp_is_licensed() ) return;
     $screen = get_current_screen();
-    if ( $screen && $screen->id === 'toplevel_page_srp-settings' ) return;
+    if ( $screen && $screen->id === 'toplevel_page_itp-settings' ) return;
 
     echo '<div class="notice notice-warning"><p>';
-    echo '<strong>Insight Tracker Pro</strong> — ';
+    echo '<strong>WP Tracker Pro</strong> — ';
     printf(
         /* translators: %s: URL to the settings page */
         esc_html__( 'Please %s to use the plugin.', 'insight-tracker-pro' ),
-        '<a href="' . esc_url( admin_url( 'admin.php?page=srp-settings' ) ) . '">' . esc_html__( 'activate your license', 'insight-tracker-pro' ) . '</a>'
+        '<a href="' . esc_url( admin_url( 'admin.php?page=itp-settings' ) ) . '">' . esc_html__( 'activate your license', 'insight-tracker-pro' ) . '</a>'
     );
     echo '</p></div>';
 }
@@ -218,23 +218,23 @@ function itp_admin_notice_expiring() {
     $days = (int) ceil( ( strtotime( $expires ) - time() ) / 86400 );
     if ( $days > 14 ) return;
     $screen = get_current_screen();
-    if ( $screen && $screen->id === 'toplevel_page_srp-settings' ) return;
+    if ( $screen && $screen->id === 'toplevel_page_itp-settings' ) return;
 
     if ( $days <= 0 ) {
-        echo '<div class="notice notice-error"><p><strong>Insight Tracker Pro</strong> — ';
+        echo '<div class="notice notice-error"><p><strong>WP Tracker Pro</strong> — ';
         printf(
             /* translators: %s: URL to renewal page */
             esc_html__( 'Your license has expired. %s', 'insight-tracker-pro' ),
-            '<a href="' . esc_url( admin_url( 'edit.php?post_type=itp_redirect&page=srp-settings' ) ) . '">' . esc_html__( 'Renew', 'insight-tracker-pro' ) . '</a>'
+            '<a href="' . esc_url( admin_url( 'admin.php?page=itp-settings' ) ) . '">' . esc_html__( 'Renew', 'insight-tracker-pro' ) . '</a>'
         );
         echo '</p></div>';
     } else {
-        echo '<div class="notice notice-warning"><p><strong>Insight Tracker Pro</strong> — ';
+        echo '<div class="notice notice-warning"><p><strong>WP Tracker Pro</strong> — ';
         printf(
             /* translators: 1: number of days, 2: link to settings page */
             esc_html( _n( 'Your license expires in %1$d day. %2$s', 'Your license expires in %1$d days. %2$s', $days, 'insight-tracker-pro' ) ),
             $days,
-            '<a href="' . esc_url( admin_url( 'edit.php?post_type=itp_redirect&page=srp-settings' ) ) . '">' . esc_html__( 'View', 'insight-tracker-pro' ) . '</a>'
+            '<a href="' . esc_url( admin_url( 'admin.php?page=itp-settings' ) ) . '">' . esc_html__( 'View', 'insight-tracker-pro' ) . '</a>'
         );
         echo '</p></div>';
     }
@@ -321,7 +321,7 @@ function itp_download_premium() {
     ] );
 
     if ( is_wp_error( $response ) ) {
-        error_log( '[SRP] Premium download error: ' . $response->get_error_message() );
+        error_log( '[ITP] Premium download error: ' . $response->get_error_message() );
         return false;
     }
 

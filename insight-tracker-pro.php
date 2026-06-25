@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Insight Tracker Pro
+ * Plugin Name: WP Tracker Pro
  * Description: WordPress-native analytics with funnel tracking, UTM auto-injection, and WooCommerce integration.
  * Version:     1.0.0
  * Author:      Abderrahim KHALID
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'ITP_VERSION', '1.0.0' );
+define( 'ITP_VERSION', '1.0.2' );
 define( 'ITP_FILE', __FILE__ );
 define( 'ITP_BASENAME', plugin_basename( __FILE__ ) );
 define( 'ITP_PATH', plugin_dir_path( __FILE__ ) );
@@ -40,7 +40,9 @@ new ITP_Settings();
 // Features loaded only when licensed
 if ( itp_is_licensed() ) {
     require_once ITP_PATH . 'admin/class-itp-context.php';
+    require_once ITP_PATH . 'admin/class-itp-proxy.php';
     new ITP_Context();
+    new ITP_Proxy();
 
     require_once ITP_PATH . 'admin/class-itp-utm.php';
     new ITP_UTM();
@@ -52,7 +54,23 @@ if ( itp_is_licensed() ) {
 
     if ( is_admin() ) {
         require_once ITP_PATH . 'admin/class-itp-dashboard.php';
+        require_once ITP_PATH . 'admin/class-itp-live.php';
+        require_once ITP_PATH . 'admin/class-itp-sources.php';
+        require_once ITP_PATH . 'admin/class-itp-countries.php';
+        require_once ITP_PATH . 'admin/class-itp-explorer.php';
         new ITP_Dashboard();
+        new ITP_Live();
+        new ITP_Sources();
+        new ITP_Countries();
+        new ITP_Explorer();
+
+        // Shared header CSS + sortable table script on ITP pages
+        add_action( 'admin_enqueue_scripts', function( $hook ) {
+            if ( isset( $_GET['page'] ) && strpos( $_GET['page'], 'itp-' ) === 0 ) {
+                wp_enqueue_style( 'itp-header', ITP_URL . 'admin/css/itp-header.css', [], ITP_VERSION );
+                wp_enqueue_script( 'itp-sortable', ITP_URL . 'admin/js/itp-sortable.js', [], ITP_VERSION, true );
+            }
+        });
     }
 }
 
@@ -106,7 +124,6 @@ add_action( 'wpmu_new_blog', 'itp_add_caps_on_new_blog' );
 // Settings helpers
 function itp_settings_defaults() {
     return [
-        'endpoint'           => 'https://dp-starter.khalid.digital/trk',
         'cookie_duration'    => 365,
         'exclude_roles'      => [ 'administrator' ],
         'exclude_ips'        => '',

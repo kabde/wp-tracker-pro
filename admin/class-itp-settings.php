@@ -11,7 +11,8 @@ class ITP_Settings {
     private $hook = '';
 
     public function __construct() {
-        add_action( 'admin_menu', [ $this, 'add_menu' ] );
+        add_action( 'admin_menu', [ $this, 'add_menu' ], 10 );
+        add_action( 'admin_menu', [ $this, 'reorder_submenu' ], 99 );
         add_action( 'admin_init', [ $this, 'register_settings' ] );
     }
 
@@ -19,14 +20,33 @@ class ITP_Settings {
 
     public function add_menu() {
         $this->hook = add_menu_page(
-            'Insight Tracker Pro',
-            'Insight Tracker Pro',
+            'WP Tracker Pro',
+            'WP Tracker Pro',
             ITP_CAPABILITY,
             'itp-settings',
             [ $this, 'render' ],
             'dashicons-chart-area',
             20
         );
+    }
+
+    public function reorder_submenu() {
+        global $submenu;
+        if ( empty( $submenu['itp-settings'] ) ) return;
+        // Find the auto-created first item and move it to end as "Settings"
+        $found_key = null;
+        foreach ( $submenu['itp-settings'] as $key => $item ) {
+            if ( $item[2] === 'itp-settings' ) {
+                $found_key = $key;
+                break;
+            }
+        }
+        if ( $found_key !== null ) {
+            $settings_item = $submenu['itp-settings'][ $found_key ];
+            $settings_item[0] = __( 'Settings', 'insight-tracker-pro' );
+            unset( $submenu['itp-settings'][ $found_key ] );
+            $submenu['itp-settings'][] = $settings_item;
+        }
     }
 
     /* ─── Register ─────────────────────────────────────────── */
@@ -49,7 +69,6 @@ class ITP_Settings {
         $clean = [];
 
         // General
-        $clean['endpoint']        = esc_url_raw( $input['endpoint'] ?? '' );
         $clean['cookie_duration'] = absint( $input['cookie_duration'] ?? 365 );
         $clean['exclude_roles']   = isset( $input['exclude_roles'] ) && is_array( $input['exclude_roles'] )
             ? array_map( 'sanitize_text_field', $input['exclude_roles'] )
@@ -158,7 +177,7 @@ class ITP_Settings {
 
             <!-- Header -->
             <div class="itp-settings-header">
-                <h1>Insight Tracker Pro</h1>
+                <h1>WP Tracker Pro</h1>
                 <span class="itp-settings-version">v<?php echo esc_html( ITP_VERSION ); ?></span>
             </div>
 
@@ -225,7 +244,7 @@ class ITP_Settings {
                                     </p>
                                 <?php else : ?>
                                     <h2 style="margin-top:0;"><?php esc_html_e( 'Activate Your License', 'insight-tracker-pro' ); ?></h2>
-                                    <p><?php esc_html_e( 'Enter your license key to activate Insight Tracker Pro.', 'insight-tracker-pro' ); ?></p>
+                                    <p><?php esc_html_e( 'Enter your license key to activate WP Tracker Pro.', 'insight-tracker-pro' ); ?></p>
                                     <p>
                                         <input type="text" id="itp-license-key" placeholder="ITP-XXXX-XXXX-XXXX" style="width:100%;font-size:16px;padding:8px 12px;font-family:monospace;text-transform:uppercase;" maxlength="19">
                                     </p>
@@ -250,13 +269,6 @@ class ITP_Settings {
                             <div class="itp-admin-section">
                                 <h2><?php esc_html_e( 'General Settings', 'insight-tracker-pro' ); ?></h2>
                                 <table class="form-table">
-                                    <tr>
-                                        <th scope="row"><?php esc_html_e( 'Endpoint URL', 'insight-tracker-pro' ); ?></th>
-                                        <td>
-                                            <input type="url" name="itp_settings[endpoint]" value="<?php echo esc_attr( $s['endpoint'] ); ?>" class="regular-text" placeholder="https://example.com/trk">
-                                            <p class="description"><?php esc_html_e( 'The URL where tracking events are sent.', 'insight-tracker-pro' ); ?></p>
-                                        </td>
-                                    </tr>
                                     <tr>
                                         <th scope="row"><?php esc_html_e( 'Cookie Duration', 'insight-tracker-pro' ); ?></th>
                                         <td>
@@ -434,7 +446,7 @@ class ITP_Settings {
                             <h2><?php esc_html_e( 'Getting Started', 'insight-tracker-pro' ); ?></h2>
                             <ol style="line-height:2;font-size:14px;color:#374151;">
                                 <li><?php echo __( 'Activate your <strong>license key</strong> in the License tab', 'insight-tracker-pro' ); ?></li>
-                                <li><?php echo __( 'Configure the <strong>endpoint URL</strong> in General settings (default is pre-configured)', 'insight-tracker-pro' ); ?></li>
+                                <li><?php echo __( 'Configure tracking options in <strong>General</strong> settings', 'insight-tracker-pro' ); ?></li>
                                 <li><?php echo __( 'Choose which <strong>events to track</strong> in the Tracking tab', 'insight-tracker-pro' ); ?></li>
                                 <li><?php echo __( 'Optionally enable <strong>UTM auto-injection</strong> in the UTM tab', 'insight-tracker-pro' ); ?></li>
                                 <li><?php esc_html_e( 'The tracking script loads automatically on all frontend pages', 'insight-tracker-pro' ); ?></li>
@@ -502,7 +514,7 @@ class ITP_Settings {
                                 <li><?php esc_html_e( 'WordPress user IDs are only included for logged-in users and can be excluded by role', 'insight-tracker-pro' ); ?></li>
                                 <li><?php esc_html_e( 'You should disclose analytics cookies in your privacy policy', 'insight-tracker-pro' ); ?></li>
                                 <li><?php esc_html_e( 'If operating in the EU, integrate with a cookie consent solution to conditionally load the tracker', 'insight-tracker-pro' ); ?></li>
-                                <li><?php esc_html_e( 'Data is sent to the endpoint URL you configure — you control where data is stored', 'insight-tracker-pro' ); ?></li>
+                                <li><?php esc_html_e( 'Data is securely sent to our analytics servers — no third-party services involved', 'insight-tracker-pro' ); ?></li>
                             </ul>
                         </div>
 
