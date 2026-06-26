@@ -125,13 +125,14 @@ class ITP_Dashboard {
             <?php /* ── STATS CARDS ── */ ?>
             <div class="itp-cards">
                 <?php
+                $err404 = $stats['errors_404'] ?? 0;
                 $cards = [
                     [ 'n' => $stats['unique_visitors'] ?? 0, 'l' => 'Visitors', 'fmt' => 'num' ],
                     [ 'n' => $stats['sessions'] ?? 0, 'l' => 'Sessions', 'fmt' => 'num' ],
                     [ 'n' => $stats['page_views'] ?? 0, 'l' => 'Page Views', 'fmt' => 'num' ],
                     [ 'n' => $stats['bounce_rate'] ?? 0, 'l' => 'Bounce Rate', 'fmt' => 'pct' ],
                     [ 'n' => $stats['cta_clicks'] ?? 0, 'l' => 'CTA Clicks', 'fmt' => 'num' ],
-                    [ 'n' => $stats['revenue'] ?? 0, 'l' => 'Revenue', 'fmt' => 'money' ],
+                    [ 'n' => $err404, 'l' => '404 Errors', 'fmt' => 'num', 'alert' => $err404 > 0 ],
                 ];
                 foreach ( $cards as $c ) :
                     if ( $c['fmt'] === 'pct' ) $display = $c['n'] . '%';
@@ -139,7 +140,7 @@ class ITP_Dashboard {
                     else $display = number_format_i18n( $c['n'] );
                 ?>
                     <div class="itp-card">
-                        <div class="itp-card-n"><?php echo esc_html( $display ); ?></div>
+                        <div class="itp-card-n" <?php if ( ! empty( $c['alert'] ) ) echo 'style="color:#dc2626;"'; ?>><?php echo esc_html( $display ); ?></div>
                         <div class="itp-card-l"><?php echo esc_html( $c['l'] ); ?></div>
                     </div>
                 <?php endforeach; ?>
