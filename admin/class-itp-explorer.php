@@ -52,12 +52,14 @@ class ITP_Explorer {
             'journeys' => __( 'User Journeys', 'insight-tracker-pro' ),
             'funnel'   => __( 'Funnel Builder', 'insight-tracker-pro' ),
             'content'  => __( 'Content', 'insight-tracker-pro' ),
+            'scroll'   => __( 'Scroll Heatmap', 'insight-tracker-pro' ),
         ];
         if ( ! isset( $tabs[$tab] ) ) $tab = 'landing';
         ?>
         <style>
             .itp-explorer-content{margin-top:0}
-            .itp-box{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+            .itp-box{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+            .itp-tbl{min-width:700px}
             .itp-tbl{width:100%;border-collapse:collapse}
             .itp-tbl th{background:#f9fafb;padding:10px 14px;text-align:left;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;border-bottom:1px solid #e5e7eb}
             .itp-tbl td{padding:10px 14px;font-size:.88rem;border-bottom:1px solid #f3f4f6}
@@ -112,6 +114,7 @@ class ITP_Explorer {
             elseif ( $tab === 'journeys' ) $this->render_journeys();
             elseif ( $tab === 'funnel' ) $this->render_funnel();
             elseif ( $tab === 'content' ) $this->render_content();
+            elseif ( $tab === 'scroll' ) $this->render_scroll_heatmap();
             ?>
         </div>
         <?php
@@ -258,6 +261,59 @@ class ITP_Explorer {
                     <td data-v="<?php echo esc_attr($time); ?>"><?php echo $time > 0 ? esc_html(floor($time/60).'m '.($time%60).'s') : '—'; ?></td>
                     <td data-v="<?php echo esc_attr($r['cta_clicks']); ?>"><?php echo esc_html(number_format_i18n($r['cta_clicks'])); ?></td>
                     <td style="font-weight:600;color:<?php echo ($r['ctr']??0)>5?'#16a34a':'#6b7280'; ?>;" data-v="<?php echo esc_attr($r['ctr']??0); ?>"><?php echo esc_html(($r['ctr']??0).'%'); ?></td>
+                </tr>
+            <?php endforeach; endif; ?>
+            </tbody>
+        </table></div>
+        <?php
+    }
+
+    private function render_scroll_heatmap() {
+        $data = $this->api( 'scroll_heatmap' );
+        $rows = $data['data'] ?? [];
+        ?>
+        <div class="itp-box"><table class="itp-tbl itp-sortable">
+            <thead><tr>
+                <th data-sort="text">Page</th>
+                <th data-sort="num">Visitors</th>
+                <th data-sort="num">Avg Scroll</th>
+                <th>Scroll Depth</th>
+                <th data-sort="num">25%</th>
+                <th data-sort="num">50%</th>
+                <th data-sort="num">75%</th>
+                <th data-sort="num">100%</th>
+            </tr></thead>
+            <tbody>
+            <?php if ( empty( $rows ) ): ?>
+                <tr><td colspan="8" class="itp-empty">No scroll data yet</td></tr>
+            <?php else: foreach ( $rows as $r ):
+                $vis = max( (int) $r['visitors'], 1 );
+                $s25 = (int) $r['scroll_25'];
+                $s50 = (int) $r['scroll_50'];
+                $s75 = (int) $r['scroll_75'];
+                $s100 = (int) $r['scroll_100'];
+                $avg = (int) $r['avg_scroll'];
+                $p25 = round( $s25 / $vis * 100 );
+                $p50 = round( $s50 / $vis * 100 );
+                $p75 = round( $s75 / $vis * 100 );
+                $p100 = round( $s100 / $vis * 100 );
+            ?>
+                <tr>
+                    <td style="font-weight:600;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr( $r['page_path'] ); ?>"><?php echo esc_html( $r['page_title'] ?: $r['page_path'] ); ?></td>
+                    <td data-v="<?php echo esc_attr( $vis ); ?>"><?php echo esc_html( $vis ); ?></td>
+                    <td data-v="<?php echo esc_attr( $avg ); ?>"><span style="font-weight:600;color:<?php echo $avg >= 75 ? '#16a34a' : ( $avg >= 50 ? '#ca8a04' : '#dc2626' ); ?>;"><?php echo esc_html( $avg ); ?>%</span></td>
+                    <td style="min-width:200px;">
+                        <div style="display:flex;height:20px;border-radius:4px;overflow:hidden;background:#f3f4f6;">
+                            <div style="width:<?php echo $p25; ?>%;background:#22c55e;" title="25%: <?php echo esc_attr( $p25 ); ?>%"></div>
+                            <div style="width:<?php echo max( 0, $p50 - $p25 ); ?>%;background:#84cc16;" title="50%"></div>
+                            <div style="width:<?php echo max( 0, $p75 - $p50 ); ?>%;background:#eab308;" title="75%"></div>
+                            <div style="width:<?php echo max( 0, $p100 - $p75 ); ?>%;background:#f97316;" title="100%"></div>
+                        </div>
+                    </td>
+                    <td data-v="<?php echo esc_attr( $p25 ); ?>" style="font-size:.82rem;color:#16a34a;font-weight:600;"><?php echo esc_html( $p25 ); ?>%</td>
+                    <td data-v="<?php echo esc_attr( $p50 ); ?>" style="font-size:.82rem;color:#84cc16;font-weight:600;"><?php echo esc_html( $p50 ); ?>%</td>
+                    <td data-v="<?php echo esc_attr( $p75 ); ?>" style="font-size:.82rem;color:#eab308;font-weight:600;"><?php echo esc_html( $p75 ); ?>%</td>
+                    <td data-v="<?php echo esc_attr( $p100 ); ?>" style="font-size:.82rem;color:#f97316;font-weight:600;"><?php echo esc_html( $p100 ); ?>%</td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>

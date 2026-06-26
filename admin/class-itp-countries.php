@@ -70,7 +70,8 @@ class ITP_Countries {
             .itp-top5-name{font-size:13px;font-weight:700;color:#1d2327;margin-top:6px}
             .itp-top5-num{font-size:20px;font-weight:800;color:#1d2327;margin-top:4px}
             .itp-top5-pct{font-size:12px;color:#6b7280}
-            .itp-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+            .itp-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+            .itp-t{min-width:1100px}
             .itp-t{width:100%;border-collapse:collapse}
             .itp-t th{background:#f9fafb;padding:10px 12px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap}
             .itp-t th.r,.itp-t td.r{text-align:right}

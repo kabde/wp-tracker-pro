@@ -84,7 +84,8 @@ class ITP_Sources {
             .itp-sum-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;text-align:center}
             .itp-sum-n{font-size:24px;font-weight:800;color:#1d2327}
             .itp-sum-l{font-size:12px;color:#6b7280;margin-top:4px}
-            .itp-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
+            .itp-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+            .itp-t{min-width:1100px}
             .itp-t{width:100%;border-collapse:collapse}
             .itp-t th{background:#f9fafb;padding:10px 12px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;border-bottom:1px solid #e5e7eb;white-space:nowrap}
             .itp-t th.right,.itp-t td.right{text-align:right}

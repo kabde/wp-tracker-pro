@@ -64,8 +64,8 @@ class ITP_Live {
         ?>
         <style>
             .itp-wrap{margin-top:0}
-            .itp-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden}
-            .itp-t{width:100%;border-collapse:collapse}
+            .itp-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+            .itp-t{border-collapse:collapse;min-width:900px;width:100%}
             .itp-t th{background:#f9fafb;padding:10px 12px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.6px;color:#6b7280;border-bottom:1px solid #e5e7eb}
             .itp-t td{padding:9px 12px;font-size:.85rem;border-bottom:1px solid #f3f4f6;vertical-align:middle}
             .itp-t tbody tr.itp-sr:hover{background:#f9fafb}
