@@ -5,7 +5,6 @@ class ITP_UTM_Builder {
 
     public function __construct() {
         add_action( 'admin_menu', [ $this, 'add_menu' ], 27 );
-        add_action( 'wp_ajax_itp_utm_history', [ $this, 'ajax_history' ] );
     }
 
     public function add_menu() {
@@ -13,31 +12,53 @@ class ITP_UTM_Builder {
         add_submenu_page( 'itp-settings', __( 'UTM Builder', 'insight-tracker-pro' ), __( 'UTM Builder', 'insight-tracker-pro' ), ITP_CAPABILITY, 'itp-utm-builder', [ $this, 'render' ] );
     }
 
-    public function ajax_history() {
-        if ( ! current_user_can( ITP_CAPABILITY ) ) wp_send_json_error( 'forbidden', 403 );
-        $history = get_option( 'itp_utm_history', [] );
-        wp_send_json_success( $history );
-    }
-
     private function save_to_history( $data ) {
         $history = get_option( 'itp_utm_history', [] );
         array_unshift( $history, $data );
-        $history = array_slice( $history, 0, 50 ); // keep last 50
         update_option( 'itp_utm_history', $history, false );
+    }
+
+    private function delete_from_history( $index ) {
+        $history = get_option( 'itp_utm_history', [] );
+        if ( isset( $history[ $index ] ) ) {
+            array_splice( $history, $index, 1 );
+            update_option( 'itp_utm_history', $history, false );
+        }
+    }
+
+    private function clear_history() {
+        delete_option( 'itp_utm_history' );
     }
 
     public function render() {
         if ( ! current_user_can( ITP_CAPABILITY ) ) wp_die( 'Insufficient permissions.' );
 
+        // Handle delete single
+        if ( isset( $_GET['delete_utm'] ) && check_admin_referer( 'itp_utm_delete' ) ) {
+            $this->delete_from_history( absint( $_GET['delete_utm'] ) );
+            wp_safe_redirect( admin_url( 'admin.php?page=itp-utm-builder&tab=' . ( $_GET['tab'] ?? 'build' ) ) );
+            exit;
+        }
+
+        // Handle clear all
+        if ( isset( $_GET['clear_utm'] ) && check_admin_referer( 'itp_utm_clear' ) ) {
+            $this->clear_history();
+            wp_safe_redirect( admin_url( 'admin.php?page=itp-utm-builder&tab=history' ) );
+            exit;
+        }
+
+        $tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'build';
+        if ( ! in_array( $tab, [ 'build', 'history' ], true ) ) $tab = 'build';
+
         // Handle form submission
         $generated_url = '';
         if ( ! empty( $_POST['itp_utm_url'] ) && check_admin_referer( 'itp_utm_build' ) ) {
-            $base_url    = esc_url_raw( wp_unslash( $_POST['itp_utm_url'] ) );
-            $utm_source  = sanitize_text_field( wp_unslash( $_POST['itp_utm_source'] ?? '' ) );
-            $utm_medium  = sanitize_text_field( wp_unslash( $_POST['itp_utm_medium'] ?? '' ) );
+            $base_url     = esc_url_raw( wp_unslash( $_POST['itp_utm_url'] ) );
+            $utm_source   = sanitize_text_field( wp_unslash( $_POST['itp_utm_source'] ?? '' ) );
+            $utm_medium   = sanitize_text_field( wp_unslash( $_POST['itp_utm_medium'] ?? '' ) );
             $utm_campaign = sanitize_text_field( wp_unslash( $_POST['itp_utm_campaign'] ?? '' ) );
-            $utm_content = sanitize_text_field( wp_unslash( $_POST['itp_utm_content'] ?? '' ) );
-            $utm_term    = sanitize_text_field( wp_unslash( $_POST['itp_utm_term'] ?? '' ) );
+            $utm_content  = sanitize_text_field( wp_unslash( $_POST['itp_utm_content'] ?? '' ) );
+            $utm_term     = sanitize_text_field( wp_unslash( $_POST['itp_utm_term'] ?? '' ) );
 
             $args = [];
             if ( $utm_source )   $args['utm_source']   = $utm_source;
@@ -54,6 +75,8 @@ class ITP_UTM_Builder {
                     'source'    => $utm_source,
                     'medium'    => $utm_medium,
                     'campaign'  => $utm_campaign,
+                    'content'   => $utm_content,
+                    'term'      => $utm_term,
                     'created'   => current_time( 'Y-m-d H:i' ),
                 ] );
             }
@@ -61,7 +84,6 @@ class ITP_UTM_Builder {
 
         $history = get_option( 'itp_utm_history', [] );
 
-        // Get published posts/pages for dropdown
         $posts = get_posts( [
             'post_type'   => [ 'post', 'page', 'product' ],
             'post_status' => 'publish',
@@ -76,7 +98,7 @@ class ITP_UTM_Builder {
             .itp-utm-form h3{margin:0 0 18px;font-size:15px;font-weight:700;color:#1d2327}
             .itp-utm-field{margin-bottom:14px}
             .itp-utm-field label{display:block;font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-            .itp-utm-field input,.itp-utm-field select{width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;color:#1d2327;background:#fff;transition:border-color .2s}
+            .itp-utm-field input,.itp-utm-field select{width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;color:#1d2327;background:#fff;transition:border-color .2s;box-sizing:border-box}
             .itp-utm-field input:focus,.itp-utm-field select:focus{border-color:#ffc45e;outline:none;box-shadow:0 0 0 3px rgba(255,196,94,.15)}
             .itp-utm-field small{display:block;font-size:11px;color:#9ca3af;margin-top:3px}
             .itp-utm-presets{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
@@ -87,7 +109,7 @@ class ITP_UTM_Builder {
             .itp-utm-result{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:24px}
             .itp-utm-result h3{margin:0 0 18px;font-size:15px;font-weight:700;color:#1d2327}
             .itp-utm-output{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:13px;word-break:break-all;color:#1d2327;position:relative;min-height:44px}
-            .itp-utm-copy{position:absolute;top:8px;right:8px;background:#1d2327;color:#ffc45e;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
+            .itp-utm-copy{display:inline-block;background:#1d2327;color:#ffc45e;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
             .itp-utm-copy:hover{background:#2d3339}
             .itp-utm-preview{margin-top:14px;padding:12px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px}
             .itp-utm-preview-h{font-size:11px;font-weight:600;color:#16a34a;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
@@ -95,12 +117,19 @@ class ITP_UTM_Builder {
             .itp-utm-preview-k{color:#6b7280;min-width:100px}
             .itp-utm-preview-v{color:#1d2327;font-weight:600}
             .itp-utm-history{background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-            .itp-utm-history h3{padding:16px 18px 0;margin:0;font-size:15px;font-weight:700;color:#1d2327}
-            .itp-utm-ht{width:100%;border-collapse:collapse;min-width:600px}
+            .itp-utm-ht{width:100%;border-collapse:collapse;min-width:700px}
             .itp-utm-ht th{background:#f9fafb;padding:8px 14px;text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:#6b7280;border-bottom:1px solid #e5e7eb}
-            .itp-utm-ht td{padding:8px 14px;font-size:.85rem;border-bottom:1px solid #f3f4f6}
+            .itp-utm-ht td{padding:8px 14px;font-size:.85rem;border-bottom:1px solid #f3f4f6;vertical-align:middle}
             .itp-utm-ht tbody tr:hover{background:#f9fafb}
-            .itp-utm-url-cell{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:.8rem}
+            .itp-utm-url-cell{max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:monospace;font-size:.8rem}
+            .itp-utm-actions{display:flex;gap:6px;align-items:center}
+            .itp-utm-del{color:#dc2626;font-size:13px;text-decoration:none;opacity:.5;transition:opacity .15s}
+            .itp-utm-del:hover{opacity:1}
+            .itp-utm-toolbar{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid #f3f4f6}
+            .itp-utm-toolbar h3{margin:0;font-size:15px;font-weight:700;color:#1d2327}
+            .itp-utm-clear{color:#dc2626;font-size:12px;font-weight:600;text-decoration:none;padding:4px 12px;border:1px solid #fecaca;border-radius:6px;transition:all .15s}
+            .itp-utm-clear:hover{background:#fef2f2;border-color:#dc2626}
+            .itp-utm-count{font-size:12px;color:#9ca3af;font-weight:400;margin-left:6px}
             @media(max-width:960px){.itp-utm-grid{grid-template-columns:1fr}}
         </style>
         <div class="itp">
@@ -111,7 +140,13 @@ class ITP_UTM_Builder {
                         <p class="itp-subtitle"><?php esc_html_e( 'Generate tagged URLs to track your campaigns', 'insight-tracker-pro' ); ?></p>
                     </div>
                 </div>
+                <div class="itp-nav">
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=itp-utm-builder&tab=build' ) ); ?>" class="<?php echo $tab === 'build' ? 'on' : ''; ?>"><?php esc_html_e( 'Build', 'insight-tracker-pro' ); ?></a>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=itp-utm-builder&tab=history' ) ); ?>" class="<?php echo $tab === 'history' ? 'on' : ''; ?>"><?php esc_html_e( 'History', 'insight-tracker-pro' ); ?><span class="itp-utm-count">(<?php echo esc_html( count( $history ) ); ?>)</span></a>
+                </div>
             </div>
+
+            <?php if ( $tab === 'build' ): ?>
 
             <div class="itp-utm-grid">
                 <div class="itp-utm-form">
@@ -175,11 +210,10 @@ class ITP_UTM_Builder {
                 <div class="itp-utm-result">
                     <h3><?php esc_html_e( 'Generated URL', 'insight-tracker-pro' ); ?></h3>
                     <?php if ( $generated_url ): ?>
-                        <div class="itp-utm-output" id="itp-utm-output">
-                            <?php echo esc_html( $generated_url ); ?>
+                        <div class="itp-utm-output" id="itp-utm-output"><?php echo esc_html( $generated_url ); ?></div>
+                        <div style="margin-top:10px;">
                             <button class="itp-utm-copy" onclick="navigator.clipboard.writeText(document.getElementById('itp-utm-output').textContent.trim());this.textContent='Copied!';setTimeout(()=>{this.textContent='Copy'},1500)">Copy</button>
                         </div>
-
                         <div class="itp-utm-preview">
                             <div class="itp-utm-preview-h"><?php esc_html_e( 'Parameters', 'insight-tracker-pro' ); ?></div>
                             <?php
@@ -205,7 +239,10 @@ class ITP_UTM_Builder {
 
             <?php if ( ! empty( $history ) ): ?>
             <div class="itp-utm-history">
-                <h3><?php esc_html_e( 'Recent Links', 'insight-tracker-pro' ); ?></h3>
+                <div class="itp-utm-toolbar">
+                    <h3><?php esc_html_e( 'Recent Links', 'insight-tracker-pro' ); ?><span class="itp-utm-count">(<?php echo esc_html( min( count( $history ), 5 ) ); ?> / <?php echo esc_html( count( $history ) ); ?>)</span></h3>
+                    <a href="<?php echo esc_url( admin_url( 'admin.php?page=itp-utm-builder&tab=history' ) ); ?>" style="font-size:12px;color:#1d2327;font-weight:600;text-decoration:none;"><?php esc_html_e( 'View all', 'insight-tracker-pro' ); ?> &rarr;</a>
+                </div>
                 <table class="itp-utm-ht">
                     <thead><tr>
                         <th><?php esc_html_e( 'Date', 'insight-tracker-pro' ); ?></th>
@@ -216,19 +253,74 @@ class ITP_UTM_Builder {
                         <th></th>
                     </tr></thead>
                     <tbody>
-                    <?php foreach ( array_slice( $history, 0, 20 ) as $h ): ?>
+                    <?php foreach ( array_slice( $history, 0, 5 ) as $i => $h ): ?>
                         <tr>
                             <td style="white-space:nowrap;font-size:.82rem;color:#6b7280;"><?php echo esc_html( $h['created'] ?? '' ); ?></td>
                             <td style="font-weight:600;"><?php echo esc_html( $h['source'] ?? '' ); ?></td>
                             <td><?php echo esc_html( $h['medium'] ?? '' ); ?></td>
                             <td><?php echo esc_html( $h['campaign'] ?? '' ); ?></td>
                             <td class="itp-utm-url-cell" title="<?php echo esc_attr( $h['url'] ?? '' ); ?>"><?php echo esc_html( $h['url'] ?? '' ); ?></td>
-                            <td><button class="itp-utm-copy" style="position:static" onclick="navigator.clipboard.writeText('<?php echo esc_js( $h['url'] ?? '' ); ?>');this.textContent='Copied!';setTimeout(()=>{this.textContent='Copy'},1500)">Copy</button></td>
+                            <td>
+                                <div class="itp-utm-actions">
+                                    <button class="itp-utm-copy" onclick="navigator.clipboard.writeText('<?php echo esc_js( $h['url'] ?? '' ); ?>');this.textContent='Copied!';setTimeout(()=>{this.textContent='Copy'},1500)">Copy</button>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=itp-utm-builder&tab=build&delete_utm=' . $i ), 'itp_utm_delete' ) ); ?>" class="itp-utm-del" onclick="return confirm('Delete this link?')" title="<?php esc_attr_e( 'Delete', 'insight-tracker-pro' ); ?>">&#10005;</a>
+                                </div>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
+            <?php endif; ?>
+
+            <?php else: /* tab === history */ ?>
+
+            <div class="itp-utm-history">
+                <div class="itp-utm-toolbar">
+                    <h3><?php esc_html_e( 'All Generated Links', 'insight-tracker-pro' ); ?><span class="itp-utm-count">(<?php echo esc_html( count( $history ) ); ?>)</span></h3>
+                    <?php if ( ! empty( $history ) ): ?>
+                        <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=itp-utm-builder&tab=history&clear_utm=1' ), 'itp_utm_clear' ) ); ?>" class="itp-utm-clear" onclick="return confirm('<?php esc_attr_e( 'Delete all links? This cannot be undone.', 'insight-tracker-pro' ); ?>')"><?php esc_html_e( 'Clear all', 'insight-tracker-pro' ); ?></a>
+                    <?php endif; ?>
+                </div>
+                <?php if ( empty( $history ) ): ?>
+                    <div style="text-align:center;padding:50px;color:#9ca3af;">
+                        <div style="font-size:13px;"><?php esc_html_e( 'No links generated yet.', 'insight-tracker-pro' ); ?></div>
+                    </div>
+                <?php else: ?>
+                <table class="itp-utm-ht">
+                    <thead><tr>
+                        <th><?php esc_html_e( 'Date', 'insight-tracker-pro' ); ?></th>
+                        <th><?php esc_html_e( 'Source', 'insight-tracker-pro' ); ?></th>
+                        <th><?php esc_html_e( 'Medium', 'insight-tracker-pro' ); ?></th>
+                        <th><?php esc_html_e( 'Campaign', 'insight-tracker-pro' ); ?></th>
+                        <th><?php esc_html_e( 'Content', 'insight-tracker-pro' ); ?></th>
+                        <th><?php esc_html_e( 'Term', 'insight-tracker-pro' ); ?></th>
+                        <th><?php esc_html_e( 'URL', 'insight-tracker-pro' ); ?></th>
+                        <th></th>
+                    </tr></thead>
+                    <tbody>
+                    <?php foreach ( $history as $i => $h ): ?>
+                        <tr>
+                            <td style="white-space:nowrap;font-size:.82rem;color:#6b7280;"><?php echo esc_html( $h['created'] ?? '' ); ?></td>
+                            <td style="font-weight:600;"><?php echo esc_html( $h['source'] ?? '' ); ?></td>
+                            <td><?php echo esc_html( $h['medium'] ?? '' ); ?></td>
+                            <td><?php echo esc_html( $h['campaign'] ?? '—' ); ?></td>
+                            <td style="font-size:.82rem;color:#6b7280;"><?php echo esc_html( $h['content'] ?? '—' ); ?></td>
+                            <td style="font-size:.82rem;color:#6b7280;"><?php echo esc_html( $h['term'] ?? '—' ); ?></td>
+                            <td class="itp-utm-url-cell" title="<?php echo esc_attr( $h['url'] ?? '' ); ?>"><?php echo esc_html( $h['url'] ?? '' ); ?></td>
+                            <td>
+                                <div class="itp-utm-actions">
+                                    <button class="itp-utm-copy" onclick="navigator.clipboard.writeText('<?php echo esc_js( $h['url'] ?? '' ); ?>');this.textContent='Copied!';setTimeout(()=>{this.textContent='Copy'},1500)">Copy</button>
+                                    <a href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin.php?page=itp-utm-builder&tab=history&delete_utm=' . $i ), 'itp_utm_delete' ) ); ?>" class="itp-utm-del" onclick="return confirm('Delete this link?')" title="<?php esc_attr_e( 'Delete', 'insight-tracker-pro' ); ?>">&#10005;</a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php endif; ?>
+            </div>
+
             <?php endif; ?>
         </div>
         <?php
