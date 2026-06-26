@@ -61,6 +61,7 @@ if ( itp_is_licensed() ) {
         require_once ITP_PATH . 'admin/class-itp-visitors.php';
         require_once ITP_PATH . 'admin/class-itp-referrers.php';
         require_once ITP_PATH . 'admin/class-itp-404.php';
+        require_once ITP_PATH . 'admin/class-itp-utm-builder.php';
         require_once ITP_PATH . 'admin/class-itp-explorer.php';
         new ITP_Dashboard();
         new ITP_Live();
@@ -69,6 +70,7 @@ if ( itp_is_licensed() ) {
         new ITP_Visitors();
         new ITP_Referrers();
         new ITP_404();
+        new ITP_UTM_Builder();
         new ITP_Explorer();
 
         // Shared header CSS + sortable table script on ITP pages
