@@ -36,7 +36,7 @@ class ITP_UTM_Builder {
         // Handle delete single
         if ( isset( $_GET['delete_utm'] ) && check_admin_referer( 'itp_utm_delete' ) ) {
             $this->delete_from_history( absint( $_GET['delete_utm'] ) );
-            wp_safe_redirect( admin_url( 'admin.php?page=itp-utm-builder&tab=' . ( $_GET['tab'] ?? 'build' ) ) );
+            wp_safe_redirect( admin_url( 'admin.php?page=itp-utm-builder&tab=' . sanitize_text_field( $_GET['tab'] ?? 'build' ) ) );
             exit;
         }
 
