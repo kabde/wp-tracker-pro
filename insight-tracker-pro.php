@@ -63,8 +63,10 @@ if ( itp_is_licensed() ) {
         require_once ITP_PATH . 'admin/class-itp-404.php';
         require_once ITP_PATH . 'admin/class-itp-utm-builder.php';
         require_once ITP_PATH . 'admin/class-itp-explorer.php';
+        require_once ITP_PATH . 'admin/class-itp-widget.php';
         new ITP_Dashboard();
         new ITP_Live();
+        new ITP_Widget();
         new ITP_Sources();
         new ITP_Countries();
         new ITP_Visitors();

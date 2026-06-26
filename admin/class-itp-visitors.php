@@ -157,7 +157,7 @@ class ITP_Visitors {
     private function render_profile( $vid ) {
         $period    = $this->period();
         $data      = $this->api( 'visitor_profile', [ 'vid' => $vid ] );
-        $profile   = $data['profile'] ?? [];
+        $profile   = $data['visitor'] ?? [];
         $sessions  = $data['sessions'] ?? [];
         $short_vid = substr( $vid, 0, 11 );
 
