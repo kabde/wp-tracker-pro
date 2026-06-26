@@ -277,21 +277,21 @@ class ITP_Explorer {
                 <th data-sort="text">Page</th>
                 <th data-sort="num">Visitors</th>
                 <th data-sort="num">Avg Scroll</th>
-                <th>Scroll Depth</th>
                 <th data-sort="num">25%</th>
                 <th data-sort="num">50%</th>
                 <th data-sort="num">75%</th>
                 <th data-sort="num">100%</th>
+                <th style="min-width:140px">Drop-off</th>
             </tr></thead>
             <tbody>
             <?php if ( empty( $rows ) ): ?>
                 <tr><td colspan="8" class="itp-empty">No scroll data yet</td></tr>
             <?php else: foreach ( $rows as $r ):
                 $vis = max( (int) $r['visitors'], 1 );
-                $s25 = (int) $r['scroll_25'];
-                $s50 = (int) $r['scroll_50'];
-                $s75 = (int) $r['scroll_75'];
-                $s100 = (int) $r['scroll_100'];
+                $s25 = min( (int) $r['scroll_25'], $vis );
+                $s50 = min( (int) $r['scroll_50'], $vis );
+                $s75 = min( (int) $r['scroll_75'], $vis );
+                $s100 = min( (int) $r['scroll_100'], $vis );
                 $avg = (int) $r['avg_scroll'];
                 $p25 = round( $s25 / $vis * 100 );
                 $p50 = round( $s50 / $vis * 100 );
@@ -302,18 +302,18 @@ class ITP_Explorer {
                     <td style="font-weight:600;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="<?php echo esc_attr( $r['page_path'] ); ?>"><?php echo esc_html( $r['page_title'] ?: $r['page_path'] ); ?></td>
                     <td data-v="<?php echo esc_attr( $vis ); ?>"><?php echo esc_html( $vis ); ?></td>
                     <td data-v="<?php echo esc_attr( $avg ); ?>"><span style="font-weight:600;color:<?php echo $avg >= 75 ? '#16a34a' : ( $avg >= 50 ? '#ca8a04' : '#dc2626' ); ?>;"><?php echo esc_html( $avg ); ?>%</span></td>
-                    <td style="min-width:200px;">
-                        <div style="display:flex;height:20px;border-radius:4px;overflow:hidden;background:#f3f4f6;">
-                            <div style="width:<?php echo $p25; ?>%;background:#22c55e;" title="25%: <?php echo esc_attr( $p25 ); ?>%"></div>
-                            <div style="width:<?php echo max( 0, $p50 - $p25 ); ?>%;background:#84cc16;" title="50%"></div>
-                            <div style="width:<?php echo max( 0, $p75 - $p50 ); ?>%;background:#eab308;" title="75%"></div>
-                            <div style="width:<?php echo max( 0, $p100 - $p75 ); ?>%;background:#f97316;" title="100%"></div>
+                    <td data-v="<?php echo esc_attr( $p25 ); ?>"><div style="display:flex;align-items:center;gap:4px;"><div style="height:8px;border-radius:4px;background:#22c55e;width:<?php echo max(4, $p25); ?>px;max-width:60px;"></div><span style="font-size:.82rem;font-weight:600;color:#16a34a;"><?php echo esc_html( $p25 ); ?>%</span></div></td>
+                    <td data-v="<?php echo esc_attr( $p50 ); ?>"><div style="display:flex;align-items:center;gap:4px;"><div style="height:8px;border-radius:4px;background:#84cc16;width:<?php echo max(4, $p50); ?>px;max-width:60px;"></div><span style="font-size:.82rem;font-weight:600;color:#65a30d;"><?php echo esc_html( $p50 ); ?>%</span></div></td>
+                    <td data-v="<?php echo esc_attr( $p75 ); ?>"><div style="display:flex;align-items:center;gap:4px;"><div style="height:8px;border-radius:4px;background:#eab308;width:<?php echo max(4, $p75); ?>px;max-width:60px;"></div><span style="font-size:.82rem;font-weight:600;color:#ca8a04;"><?php echo esc_html( $p75 ); ?>%</span></div></td>
+                    <td data-v="<?php echo esc_attr( $p100 ); ?>"><div style="display:flex;align-items:center;gap:4px;"><div style="height:8px;border-radius:4px;background:#f97316;width:<?php echo max(4, $p100); ?>px;max-width:60px;"></div><span style="font-size:.82rem;font-weight:600;color:#ea580c;"><?php echo esc_html( $p100 ); ?>%</span></div></td>
+                    <td>
+                        <div style="display:flex;flex-direction:column;gap:2px;">
+                            <div style="height:6px;border-radius:3px;background:#22c55e;width:<?php echo max(6, $p25 * 1.2); ?>px;max-width:120px;"></div>
+                            <div style="height:6px;border-radius:3px;background:#84cc16;width:<?php echo max(6, $p50 * 1.2); ?>px;max-width:120px;"></div>
+                            <div style="height:6px;border-radius:3px;background:#eab308;width:<?php echo max(6, $p75 * 1.2); ?>px;max-width:120px;"></div>
+                            <div style="height:6px;border-radius:3px;background:#f97316;width:<?php echo max(6, $p100 * 1.2); ?>px;max-width:120px;"></div>
                         </div>
                     </td>
-                    <td data-v="<?php echo esc_attr( $p25 ); ?>" style="font-size:.82rem;color:#16a34a;font-weight:600;"><?php echo esc_html( $p25 ); ?>%</td>
-                    <td data-v="<?php echo esc_attr( $p50 ); ?>" style="font-size:.82rem;color:#84cc16;font-weight:600;"><?php echo esc_html( $p50 ); ?>%</td>
-                    <td data-v="<?php echo esc_attr( $p75 ); ?>" style="font-size:.82rem;color:#eab308;font-weight:600;"><?php echo esc_html( $p75 ); ?>%</td>
-                    <td data-v="<?php echo esc_attr( $p100 ); ?>" style="font-size:.82rem;color:#f97316;font-weight:600;"><?php echo esc_html( $p100 ); ?>%</td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>
